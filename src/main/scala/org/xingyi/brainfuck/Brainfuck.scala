@@ -16,6 +16,12 @@ object Brainfuck {
 case class BFInstruction(instructionFn: InstructionFn, stateFn: StateFn) extends BrainFuckFn {
   override def apply(bf: Brainfuck) = Brainfuck(instructionFn(bf.instructions), stateFn(bf.state))
 }
+case class OpenInstruction(findClose: InstructionFn, next: InstructionFn) extends BrainFuckFn {
+  override def apply(bf: Brainfuck): Brainfuck = if (bf.state.get == 0) bf.copy(findClose(bf.instructions)) else bf.copy(next(bf.instructions))
+}
+case class CloseInstruction(findOpen: InstructionFn, next: InstructionFn) extends BrainFuckFn {
+  override def apply(bf: Brainfuck): Brainfuck = if (bf.state.get== 0) bf.copy(next(bf.instructions)) else bf.copy(findOpen(bf.instructions))
+}
 
 trait BrainFuckOps extends (String => BrainFuckFn) {
   def plus: BrainFuckFn
@@ -40,8 +46,8 @@ object BrainFuckOps {
     val more: BrainFuckFn = BFInstruction(i.next, s.more)
     val comma: BrainFuckFn = BFInstruction(i.next, s.comma)
     val dot: BrainFuckFn = BFInstruction(i.next, s.dot)
-    val open: BrainFuckFn = BFInstruction(i.findClose, s.identity)
-    val close: BrainFuckFn = BFInstruction(i.findClose, s.identity)
+    val open: BrainFuckFn = OpenInstruction(i.findClose, i.next)
+    val close: BrainFuckFn = CloseInstruction(i.findOpen, i.next)
     val ignore: BrainFuckFn = BFInstruction(i.next, s.identity)
   }
 }
@@ -52,6 +58,7 @@ class BrainFuckExecutor(implicit brainFuckOps: BrainFuckOps) {
 
   @tailrec
   final def execute(bf: Brainfuck): Brainfuck = {
+    println(bf)
     if (bf.canExecute) execute(executeOne(bf)) else bf
   }
 }

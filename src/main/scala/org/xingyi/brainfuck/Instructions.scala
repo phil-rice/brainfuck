@@ -31,7 +31,7 @@ object InstructionOps {
           case _ => findOpen(p - 1, count)
         }
       }
-      if (i.current == "]") findOpen(i.pointer - 1, 1) else throw new NotAtCloseException
+      if (i.current == "]") findOpen(i.pointer - 1, 1) else throw new NotAtCloseException(i)
     }
 
 
@@ -47,7 +47,7 @@ object InstructionOps {
             case _ => findClose(p + 1, count)
           }
         }
-        if (i.current == "[") findClose(i.pointer + 1, 1) else throw new NotAtOpenException
+        if (i.current == "[") findClose(i.pointer + 1, 1) else throw new NotAtOpenException(i)
     }
   }
 }

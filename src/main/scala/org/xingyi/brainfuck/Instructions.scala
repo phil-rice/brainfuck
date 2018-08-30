@@ -17,32 +17,9 @@ trait InstructionOps {
   def findClose: OpenCloseFn
 }
 
-//
-//class OtherBrackerFinder(thisBracket: String, otherBracket: String, next: Int => Int, exception: Instructions => Exception) extends InstructionFn {
-//  override def apply(i: Instructions): Instructions = {
-//    if (i.current != thisBracket) throw exception(i)
-//    var p = i.pointer
-//    var count = 0
-//    var cont = true
-//    while (cont) {
-//      p = next(p)
-//      if (p < 0 || p >= i.commands.length) throw new MismatchedBracketsException
-//      i.get(p) match {
-//        case x if x == thisBracket => count += 1
-//        case x if x == otherBracket && count == 0 => cont = false
-//        case x if x == otherBracket => count -= 1
-//        case _ =>
-//      }
-//    }
-//    Instructions(i.commands, p)
-//  }
-//}
-
 trait MakeIndexData extends (String => IndexDataResult)
 
 object MakeIndexData {
-
-
   implicit object defaultMakeIndexData extends MakeIndexData {
     def operationsMap(acc: IndexData) = Map('[' -> acc.open, ']' -> acc.close)
 

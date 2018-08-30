@@ -34,7 +34,7 @@ class BrainfuckSpec extends BFSpec {
     val bf1 = bf0.copy(state = State(Map(0 -> 1), 0))
 
     bf0.setInstructions(instructions0, instructions1) shouldBe bf0.copy(instructions = instructions0)
-    bf1.setInstructions(instructions0, instructions1) shouldBe  bf1.copy(instructions = instructions1)
+    bf1.setInstructions(instructions0, instructions1) shouldBe bf1.copy(instructions = instructions1)
   }
 
 
@@ -116,38 +116,35 @@ class BrainfuckSpec extends BFSpec {
     val o = OpenInstruction(mock[OpenCloseFn], next)
 
     o(start) shouldBe Brainfuck(endInstructions, State(Map(0 -> 1)), indexData)
-
   }
 
   behavior of "CloseInstruction"
+
+  it should "if the current state is not zero will findOpen" in {
+    val findOpen = mock[OpenCloseFn]
+    val endInstructions = mock[Instructions]
+
+    val bf = Brainfuck("abc").copy(state = State(Map(1 -> 2), 1))
+    when(findOpen.apply(bf.indexDataResult, bf.instructions)) thenReturn endInstructions
+
+    val o = CloseInstruction(findOpen, mock[InstructionFn])
+
+    o(bf) shouldBe Brainfuck(endInstructions, bf.state, bf.indexDataResult)
+
+  }
 
   it should "if the current state is zero will next" in {
     val next = mock[InstructionFn]
     val startInstructions = mock[Instructions]
     val endInstructions = mock[Instructions]
-    when(next.apply(startInstructions)) thenReturn (endInstructions)
+    when(next.apply(startInstructions)) thenReturn endInstructions
     val indexData = mock[IndexDataResult]
 
     val start = Brainfuck(startInstructions, State(), indexData)
     val o = CloseInstruction(mock[OpenCloseFn], next)
 
     o(start) shouldBe Brainfuck(endInstructions, State(), indexData)
-
   }
-  //
-  //    it should "if the current state is not zero will findOpen" in { //TODO
-  //      val next = mock[InstructionFn]
-  //      val startInstructions = mock[Instructions]
-  //      val endInstructions = mock[Instructions]
-  //      when(next.apply(startInstructions)) thenReturn (endInstructions)
-  //
-  //      val start = Brainfuck(startInstructions, State(Map(0 -> 1), 0))
-  //      val o = OpenInstruction(mock[InstructionFn], next)
-  //
-  //      o(start) shouldBe Brainfuck(endInstructions, State(Map(0 -> 1)))
-  //
-  //
-  //    }
 
   behavior of "BrainFuckExecutor"
 

@@ -8,7 +8,7 @@ class BFIOSpec extends BFSpec {
   it should "print a nubtmber to the console" in {
     val output = new ByteArrayOutputStream()
     Console.withOut(output) {implicitly[BFOutput] apply 1}
-    output.toByteArray shouldBe Array(49) //TODO
+    output.toByteArray shouldBe Array(1) //TODO
   }
 
 

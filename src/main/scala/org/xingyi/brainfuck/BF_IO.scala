@@ -3,7 +3,7 @@ package org.xingyi.brainfuck
 trait BFOutput extends (Int => Unit)
 
 object BFOutput {
-  implicit def default: BFOutput = i => Console.print(i)
+  implicit def default: BFOutput = i => Console.print(i.toChar)
 }
 trait BFinput extends (() => Int)
 object BFinput {

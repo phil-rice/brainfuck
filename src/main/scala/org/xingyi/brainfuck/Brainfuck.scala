@@ -3,24 +3,26 @@ import org.xingyi.brainfuck
 
 import scala.annotation.tailrec
 
-case class Brainfuck(instructions: Instructions, state: State) {
+case class Brainfuck(instructions: Instructions, state: State, indexDataResult: IndexDataResult) {
   def canExecute: Boolean = instructions.canExecute
-
-  def currentInstruction = instructions.current
+  def currentInstruction: String = instructions.current
+  def setInstructions(ifStateZero: => Instructions, ifStateNotZero: => Instructions): Brainfuck = copy(instructions = if (state.get == 0) ifStateZero else ifStateNotZero)
 }
 object Brainfuck {
-  def apply(s: String): Brainfuck = Brainfuck(Instructions(s), State())
+  def apply(s: String)(implicit makeIndexData: MakeIndexData): Brainfuck = Brainfuck(Instructions(s, 0), State(), makeIndexData(s))
 }
 
 
 case class BFInstruction(instructionFn: InstructionFn, stateFn: StateFn) extends BrainFuckFn {
-  override def apply(bf: Brainfuck) = Brainfuck(instructionFn(bf.instructions), stateFn(bf.state))
+  override def apply(bf: Brainfuck) = bf.copy(instructions = instructionFn(bf.instructions), state = stateFn(bf.state))
 }
-case class OpenInstruction(findClose: InstructionFn, next: InstructionFn) extends BrainFuckFn {
-  override def apply(bf: Brainfuck): Brainfuck = if (bf.state.get == 0) bf.copy(findClose(bf.instructions)) else bf.copy(next(bf.instructions))
+case class OpenInstruction(findClose: OpenCloseFn, next: InstructionFn) extends BrainFuckFn {
+  override def apply(bf: Brainfuck): Brainfuck =
+    bf.setInstructions(ifStateZero = findClose(bf.indexDataResult, bf.instructions), ifStateNotZero = next(bf.instructions))
 }
-case class CloseInstruction(findOpen: InstructionFn, next: InstructionFn) extends BrainFuckFn {
-  override def apply(bf: Brainfuck): Brainfuck = if (bf.state.get== 0) bf.copy(next(bf.instructions)) else bf.copy(findOpen(bf.instructions))
+case class CloseInstruction(findOpen: OpenCloseFn, next: InstructionFn) extends BrainFuckFn {
+  override def apply(bf: Brainfuck): Brainfuck =
+    bf.setInstructions(ifStateZero = next(bf.instructions), ifStateNotZero = findOpen(bf.indexDataResult, bf.instructions))
 }
 
 trait BrainFuckOps extends (String => BrainFuckFn) {
@@ -57,10 +59,8 @@ class BrainFuckExecutor(implicit brainFuckOps: BrainFuckOps) {
   def executeOne(bf: Brainfuck) = brainFuckOps(bf.currentInstruction)(bf)
 
   @tailrec
-  final def execute(bf: Brainfuck): Brainfuck = {
-    println(bf)
-    if (bf.canExecute) execute(executeOne(bf)) else bf
-  }
+  final def execute(bf: Brainfuck): Brainfuck = if (bf.canExecute) execute(executeOne(bf)) else bf
+
 }
 
 object BrainFuckExecutor {
